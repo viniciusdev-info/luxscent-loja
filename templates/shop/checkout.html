@@ -1,0 +1,117 @@
+{% extends 'base.html' %}
+{% block title %}Checkout | LuxScent{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div class="container">
+        <h1><i class="fas fa-lock"></i> Finalizar Pedido</h1>
+        <p>Preencha seus dados e finalize pelo WhatsApp</p>
+    </div>
+</div>
+
+<section class="section">
+    <div class="container">
+        <div class="checkout-layout">
+            <!-- Formulário -->
+            <div class="checkout-form-wrap">
+                <div class="checkout-card">
+                    <h2><i class="fas fa-user"></i> Seus Dados</h2>
+                    <form method="post" action="{{ url_for('shop.checkout') }}" id="checkoutForm">
+                        <div class="form-group">
+                            <label class="form-label">Nome Completo *</label>
+                            <input type="text" name="name" class="form-input" placeholder="Seu nome completo" required
+                                   value="{{ current_user.name if current_user.is_authenticated else '' }}">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">WhatsApp *</label>
+                            <div class="input-icon-wrap">
+                                <i class="fab fa-whatsapp input-icon"></i>
+                                <input type="tel" name="whatsapp" class="form-input input-with-icon"
+                                       placeholder="(85) 99999-9999" required
+                                       value="{{ current_user.phone if current_user.is_authenticated else '' }}">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Endereço de Entrega *</label>
+                            <textarea name="address" class="form-input" rows="3" required
+                                      placeholder="Rua, Número, Bairro, Cidade - Estado, CEP"></textarea>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">Forma de Pagamento</label>
+                            <div class="payment-options">
+                                <label class="payment-option">
+                                    <input type="radio" name="payment" value="pix" checked>
+                                    <span><i class="fas fa-qrcode"></i> Pix (10% OFF)</span>
+                                </label>
+                                <label class="payment-option">
+                                    <input type="radio" name="payment" value="transferencia">
+                                    <span><i class="fas fa-university"></i> Transferência</span>
+                                </label>
+                                <label class="payment-option">
+                                    <input type="radio" name="payment" value="cartao">
+                                    <span><i class="fas fa-credit-card"></i> Cartão (link)</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn btn-gold btn-full btn-xl checkout-submit">
+                            <i class="fab fa-whatsapp"></i>
+                            Finalizar pelo WhatsApp
+                        </button>
+                        <p class="checkout-note">
+                            <i class="fas fa-info-circle"></i>
+                            Você será redirecionado ao WhatsApp para confirmar seu pedido.
+                        </p>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Resumo -->
+            <div class="order-summary-wrap">
+                <div class="checkout-card">
+                    <h2><i class="fas fa-receipt"></i> Resumo</h2>
+                    <div class="order-items">
+                        {% for item in items %}
+                        <div class="order-item">
+                            <div class="order-item-img product-img-placeholder" style="background: var(--grad-{{ loop.index % 4 + 1 }})">
+                                <i class="fas fa-spray-can"></i>
+                            </div>
+                            <div class="order-item-info">
+                                <span class="order-item-name">{{ item.name }}</span>
+                                <span class="order-item-qty">{{ item.quantity }}x</span>
+                            </div>
+                            <span class="order-item-price">R$ {{ "%.2f"|format(item.subtotal) }}</span>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    <div class="summary-divider"></div>
+                    <div class="summary-row">
+                        <span>Subtotal</span>
+                        <span>R$ {{ "%.2f"|format(total) }}</span>
+                    </div>
+                    <div class="summary-row">
+                        <span>Frete</span>
+                        <span class="text-success">{{ 'Grátis' if total >= 200 else 'A combinar' }}</span>
+                    </div>
+                    <div class="summary-row summary-total">
+                        <span>Total</span>
+                        <span>R$ {{ "%.2f"|format(total) }}</span>
+                    </div>
+                    <div class="pix-box mt-12">
+                        <i class="fas fa-qrcode"></i>
+                        Pix: R$ {{ "%.2f"|format(total * 0.9) }} <small>(10% de desconto)</small>
+                    </div>
+                </div>
+
+                <!-- Segurança -->
+                <div class="security-badges">
+                    <div class="sec-badge"><i class="fas fa-shield-alt"></i> Dados seguros</div>
+                    <div class="sec-badge"><i class="fab fa-whatsapp"></i> Suporte via WhatsApp</div>
+                    <div class="sec-badge"><i class="fas fa-undo"></i> Troca garantida</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

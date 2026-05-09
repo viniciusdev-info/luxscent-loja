@@ -1,0 +1,29 @@
+{% extends 'admin/base_admin.html' %}
+{% block title %}Categorias | Admin{% endblock %}
+{% block page_title %}Categorias{% endblock %}
+
+{% block content %}
+<div class="admin-grid-2">
+    <div class="admin-card">
+        <h3>Nova Categoria</h3>
+        <form method="post" action="{{ url_for('admin.category_new') }}" class="admin-form">
+            <div class="form-group">
+                <label class="form-label">Nome da Categoria</label>
+                <input type="text" name="name" class="form-input" placeholder="Ex: Amadeirado" required>
+            </div>
+            <button type="submit" class="btn btn-gold"><i class="fas fa-plus"></i> Criar</button>
+        </form>
+    </div>
+    <div class="admin-card">
+        <h3>Categorias Existentes</h3>
+        <ul class="cat-admin-list">
+            {% for cat in categories %}
+            <li>
+                <span>{{ cat.name }}</span>
+                <span class="text-muted text-sm">{{ cat.products.count() }} produtos</span>
+            </li>
+            {% endfor %}
+        </ul>
+    </div>
+</div>
+{% endblock %}

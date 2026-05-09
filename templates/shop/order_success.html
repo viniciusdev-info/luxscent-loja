@@ -1,0 +1,47 @@
+{% extends 'base.html' %}
+{% block title %}Pedido Confirmado! | LuxScent{% endblock %}
+
+{% block content %}
+<section class="section">
+    <div class="container">
+        <div class="success-card">
+            <div class="success-icon">✅</div>
+            <h1>Pedido Recebido!</h1>
+            <p class="success-sub">Seu pedido <strong>#{{ order.id }}</strong> foi registrado com sucesso.</p>
+
+            <div class="order-info-box">
+                <div><strong>Cliente:</strong> {{ order.customer_name }}</div>
+                <div><strong>Total:</strong> R$ {{ "%.2f"|format(order.total) }}</div>
+                <div><strong>Status:</strong> {{ order.status_label }}</div>
+            </div>
+
+            <p class="wa-instruction">
+                <i class="fab fa-whatsapp"></i>
+                Agora clique no botão abaixo para finalizar pelo <strong>WhatsApp</strong> e confirmar seu pedido:
+            </p>
+
+            <a href="{{ wa_url }}" target="_blank" class="btn btn-whatsapp btn-xl wa-pulse">
+                <i class="fab fa-whatsapp"></i>
+                Confirmar Pedido no WhatsApp
+            </a>
+
+            <div class="success-actions">
+                <a href="{{ url_for('shop.catalog') }}" class="btn btn-outline">Continuar Comprando</a>
+                {% if current_user.is_authenticated %}
+                <a href="{{ url_for('auth.my_account') }}" class="btn btn-outline">Meus Pedidos</a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Auto abrir WhatsApp após 2 segundos
+setTimeout(() => {
+    const waUrl = "{{ wa_url }}";
+    if (waUrl) window.open(waUrl, '_blank');
+}, 2000);
+</script>
+{% endblock %}

@@ -1,0 +1,61 @@
+{% extends 'base.html' %}
+{% block title %}Minha Conta | LuxScent{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div class="container">
+        <h1>Minha Conta</h1>
+        <p>Olá, {{ current_user.name }}! 👋</p>
+    </div>
+</div>
+
+<section class="section">
+    <div class="container">
+        <div class="account-layout">
+            <aside class="account-sidebar">
+                <div class="account-avatar">{{ current_user.name[:2].upper() }}</div>
+                <div class="account-name">{{ current_user.name }}</div>
+                <div class="account-email">{{ current_user.email }}</div>
+                <nav class="account-nav">
+                    <a href="{{ url_for('auth.my_account') }}" class="active">📦 Meus Pedidos</a>
+                    {% if current_user.is_admin %}
+                    <a href="{{ url_for('admin.dashboard') }}">⚙️ Painel Admin</a>
+                    {% endif %}
+                    <a href="{{ url_for('auth.logout') }}">🚪 Sair</a>
+                </nav>
+            </aside>
+
+            <div class="account-main">
+                <h2>Histórico de Pedidos</h2>
+                {% if orders %}
+                <div class="orders-list">
+                    {% for order in orders %}
+                    <div class="order-row">
+                        <div>
+                            <strong>Pedido #{{ order.id }}</strong>
+                            <span class="order-date">{{ order.created_at.strftime('%d/%m/%Y %H:%M') }}</span>
+                        </div>
+                        <div>
+                            <span class="status-badge {{ order.status_class }}">{{ order.status_label }}</span>
+                        </div>
+                        <div class="order-total">R$ {{ "%.2f"|format(order.total) }}</div>
+                        <div class="order-items-preview">
+                            {% for item in order.items.limit(2).all() %}
+                            <span>{{ item.product_name }} ({{ item.quantity }}x)</span>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="empty-state">
+                    <i class="fas fa-shopping-bag"></i>
+                    <h3>Você ainda não fez pedidos</h3>
+                    <a href="{{ url_for('shop.catalog') }}" class="btn btn-gold">Ver Catálogo</a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

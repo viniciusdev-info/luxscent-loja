@@ -1,0 +1,61 @@
+{% extends 'admin/base_admin.html' %}
+{% block title %}Pedido #{{ order.id }} | Admin{% endblock %}
+{% block page_title %}Pedido #{{ order.id }}{% endblock %}
+
+{% block content %}
+<div class="admin-grid-2">
+    <div class="admin-card">
+        <h3>Dados do Cliente</h3>
+        <div class="detail-list">
+            <div><strong>Nome:</strong> {{ order.customer_name }}</div>
+            <div><strong>WhatsApp:</strong>
+                <a href="https://wa.me/55{{ order.customer_whatsapp|replace('(',')')|replace(')','') |replace(' ','')|replace('-','') }}" target="_blank" class="wa-link">
+                    <i class="fab fa-whatsapp"></i> {{ order.customer_whatsapp }}
+                </a>
+            </div>
+            <div><strong>Endereço:</strong> {{ order.customer_address }}</div>
+            <div><strong>Data:</strong> {{ order.created_at.strftime('%d/%m/%Y às %H:%M') }}</div>
+        </div>
+
+        <hr class="divider">
+        <h3>Atualizar Status</h3>
+        <form method="post" action="{{ url_for('admin.order_update_status', order_id=order.id) }}" class="status-form">
+            <select name="status" class="form-input">
+                {% for status in ['pendente', 'confirmado', 'enviado', 'entregue', 'cancelado'] %}
+                <option value="{{ status }}" {% if order.status == status %}selected{% endif %}>
+                    {{ status|title }}
+                </option>
+                {% endfor %}
+            </select>
+            <button type="submit" class="btn btn-gold mt-8">Atualizar</button>
+        </form>
+    </div>
+
+    <div class="admin-card">
+        <h3>Itens do Pedido</h3>
+        <div class="order-items-admin">
+            {% for item in order.items %}
+            <div class="order-item-row">
+                <div>
+                    <strong>{{ item.product_name }}</strong>
+                    <div class="text-muted text-sm">R$ {{ "%.2f"|format(item.product_price) }} × {{ item.quantity }}</div>
+                </div>
+                <div class="item-subtotal">R$ {{ "%.2f"|format(item.subtotal) }}</div>
+            </div>
+            {% endfor %}
+        </div>
+        <hr class="divider">
+        <div class="order-total-row">
+            <strong>Total</strong>
+            <strong class="text-gold">R$ {{ "%.2f"|format(order.total) }}</strong>
+        </div>
+        <div class="mt-16">
+            <span class="status-badge {{ order.status_class }}">{{ order.status_label }}</span>
+        </div>
+    </div>
+</div>
+
+<div class="mt-16">
+    <a href="{{ url_for('admin.orders') }}" class="btn btn-outline">← Voltar</a>
+</div>
+{% endblock %}

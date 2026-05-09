@@ -1,0 +1,138 @@
+{% extends 'base.html' %}
+{% block title %}Carrinho | LuxScent{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div class="container">
+        <h1><i class="fas fa-shopping-bag"></i> Meu Carrinho</h1>
+    </div>
+</div>
+
+<section class="section">
+    <div class="container">
+        {% if items %}
+        <div class="cart-layout">
+            <!-- Itens -->
+            <div class="cart-items">
+                {% for item in items %}
+                <div class="cart-item" id="cart-item-{{ item.id }}">
+                    <div class="cart-item-img product-img-placeholder" style="background: var(--grad-{{ loop.index % 4 + 1 }})">
+                        <i class="fas fa-spray-can"></i>
+                        <span>{{ item.name[:2].upper() }}</span>
+                    </div>
+                    <div class="cart-item-info">
+                        <h3>{{ item.name }}</h3>
+                        <div class="cart-item-price">R$ {{ "%.2f"|format(item.price) }}</div>
+                    </div>
+                    <div class="cart-item-qty">
+                        <form class="qty-update-form" data-id="{{ item.id }}">
+                            <button type="button" class="qty-btn qty-dec">−</button>
+                            <input type="number" class="qty-input qty-field" value="{{ item.quantity }}" min="1" max="99" data-price="{{ item.price }}">
+                            <button type="button" class="qty-btn qty-inc">+</button>
+                        </form>
+                    </div>
+                    <div class="cart-item-subtotal" id="subtotal-{{ item.id }}">
+                        R$ {{ "%.2f"|format(item.subtotal) }}
+                    </div>
+                    <form action="{{ url_for('shop.remove_from_cart', product_id=item.id) }}" method="post" class="remove-form">
+                        <button type="submit" class="remove-btn" title="Remover"><i class="fas fa-trash"></i></button>
+                    </form>
+                </div>
+                {% endfor %}
+            </div>
+
+            <!-- Resumo -->
+            <div class="cart-summary">
+                <h3>Resumo do Pedido</h3>
+                <div class="summary-row">
+                    <span>Subtotal</span>
+                    <span id="summaryTotal">R$ {{ "%.2f"|format(total) }}</span>
+                </div>
+                <div class="summary-row">
+                    <span>Frete</span>
+                    <span class="text-success">Grátis acima de R$200</span>
+                </div>
+                <div class="summary-row summary-total">
+                    <span>Total</span>
+                    <span id="grandTotal">R$ {{ "%.2f"|format(total) }}</span>
+                </div>
+                <div class="pix-box">
+                    <i class="fas fa-qrcode"></i>
+                    <span>Pague com Pix e economize <strong>10%!</strong></span>
+                </div>
+                <a href="{{ url_for('shop.checkout') }}" class="btn btn-gold btn-full btn-lg">
+                    <i class="fas fa-lock"></i> Finalizar Pedido
+                </a>
+                <a href="{{ url_for('shop.catalog') }}" class="btn btn-outline btn-full mt-8">
+                    Continuar Comprando
+                </a>
+            </div>
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <i class="fas fa-shopping-bag"></i>
+            <h3>Seu carrinho está vazio</h3>
+            <p>Explore nossa coleção e adicione fragrâncias incríveis!</p>
+            <a href="{{ url_for('shop.catalog') }}" class="btn btn-gold btn-lg">Ver Catálogo</a>
+        </div>
+        {% endif %}
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Update quantity with AJAX
+document.querySelectorAll('.qty-update-form').forEach(form => {
+    const id = form.dataset.id;
+    const input = form.querySelector('.qty-field');
+    const dec = form.querySelector('.qty-dec');
+    const inc = form.querySelector('.qty-inc');
+
+    function updateQty(newQty) {
+        if (newQty < 1) return;
+        input.value = newQty;
+        const fd = new FormData();
+        fd.append('product_id', id);
+        fd.append('quantity', newQty);
+        fetch('/carrinho/atualizar', {method:'POST', headers:{'X-Requested-With':'XMLHttpRequest'}, body: fd})
+            .then(r => r.json())
+            .then(data => {
+                if (data.success) {
+                    document.getElementById('cartBadge').textContent = data.cart_count;
+                    document.getElementById('summaryTotal').textContent = 'R$ ' + data.cart_total.toFixed(2).replace('.',',');
+                    document.getElementById('grandTotal').textContent = 'R$ ' + data.cart_total.toFixed(2).replace('.',',');
+                    const sub = document.getElementById('subtotal-' + id);
+                    if (sub) sub.textContent = 'R$ ' + data.item_subtotal.toFixed(2).replace('.',',');
+                }
+            });
+    }
+
+    dec.addEventListener('click', () => updateQty(parseInt(input.value) - 1));
+    inc.addEventListener('click', () => updateQty(parseInt(input.value) + 1));
+    input.addEventListener('change', () => updateQty(parseInt(input.value)));
+});
+
+// Remove with AJAX
+document.querySelectorAll('.remove-form').forEach(form => {
+    form.addEventListener('submit', function(e) {
+        e.preventDefault();
+        fetch(this.action, {method:'POST', headers:{'X-Requested-With':'XMLHttpRequest'}})
+            .then(r => r.json())
+            .then(data => {
+                if (data.success) {
+                    // Remove the cart item row visually
+                    const btn = this.querySelector('button');
+                    const row = btn.closest('.cart-item');
+                    row.style.opacity = '0';
+                    row.style.transition = 'opacity 0.3s';
+                    setTimeout(() => { row.remove(); if (!document.querySelector('.cart-item')) location.reload(); }, 300);
+                    document.getElementById('cartBadge').textContent = data.cart_count;
+                    document.getElementById('summaryTotal').textContent = 'R$ ' + data.cart_total.toFixed(2).replace('.',',');
+                    document.getElementById('grandTotal').textContent = 'R$ ' + data.cart_total.toFixed(2).replace('.',',');
+                }
+            });
+    });
+});
+</script>
+{% endblock %}

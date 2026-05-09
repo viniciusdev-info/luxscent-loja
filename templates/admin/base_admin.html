@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Admin | LuxScent{% endblock %}</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Jost:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/admin.css') }}">
+</head>
+<body class="admin-body">
+
+<div class="admin-layout">
+    <!-- Sidebar -->
+    <aside class="admin-sidebar">
+        <div class="admin-brand">
+            <span>✦</span> LuxScent Admin
+        </div>
+        <nav class="admin-nav">
+            <a href="{{ url_for('admin.dashboard') }}" class="admin-nav-link {% if request.endpoint == 'admin.dashboard' %}active{% endif %}">
+                <i class="fas fa-chart-line"></i> Dashboard
+            </a>
+            <a href="{{ url_for('admin.products') }}" class="admin-nav-link {% if 'product' in request.endpoint %}active{% endif %}">
+                <i class="fas fa-spray-can"></i> Produtos
+            </a>
+            <a href="{{ url_for('admin.orders') }}" class="admin-nav-link {% if 'order' in request.endpoint %}active{% endif %}">
+                <i class="fas fa-receipt"></i> Pedidos
+            </a>
+            <a href="{{ url_for('admin.categories') }}" class="admin-nav-link {% if 'categor' in request.endpoint %}active{% endif %}">
+                <i class="fas fa-tags"></i> Categorias
+            </a>
+            <hr class="nav-divider">
+            <a href="{{ url_for('shop.home') }}" class="admin-nav-link">
+                <i class="fas fa-store"></i> Ver Loja
+            </a>
+            <a href="{{ url_for('auth.logout') }}" class="admin-nav-link">
+                <i class="fas fa-sign-out-alt"></i> Sair
+            </a>
+        </nav>
+    </aside>
+
+    <!-- Main -->
+    <main class="admin-main">
+        <div class="admin-topbar">
+            <h1 class="admin-page-title">{% block page_title %}{% endblock %}</h1>
+            <div class="admin-user">
+                <i class="fas fa-user-shield"></i> {{ current_user.name }}
+            </div>
+        </div>
+
+        {% with messages = get_flashed_messages(with_categories=True) %}
+        {% if messages %}
+        <div class="flash-container">
+            {% for cat, msg in messages %}
+            <div class="flash flash-{{ cat }}">{{ msg }} <button onclick="this.parentElement.remove()">✕</button></div>
+            {% endfor %}
+        </div>
+        {% endif %}
+        {% endwith %}
+
+        <div class="admin-content">
+            {% block content %}{% endblock %}
+        </div>
+    </main>
+</div>
+
+<script src="{{ url_for('static', filename='js/admin.js') }}"></script>
+</body>
+</html>

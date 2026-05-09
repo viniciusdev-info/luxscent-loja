@@ -1,0 +1,61 @@
+{% extends 'admin/base_admin.html' %}
+{% block title %}Produtos | Admin{% endblock %}
+{% block page_title %}Gerenciar Produtos{% endblock %}
+
+{% block content %}
+<div class="card-header mb-16">
+    <a href="{{ url_for('admin.product_new') }}" class="btn btn-gold">
+        <i class="fas fa-plus"></i> Novo Produto
+    </a>
+</div>
+
+<div class="admin-card">
+    <div class="table-wrap">
+        <table class="admin-table">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Nome</th>
+                    <th>Categoria</th>
+                    <th>Preço</th>
+                    <th>Estoque</th>
+                    <th>Destaque</th>
+                    <th>Status</th>
+                    <th>Ações</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for p in products %}
+                <tr class="{% if not p.is_active %}row-inactive{% endif %}">
+                    <td>{{ p.id }}</td>
+                    <td><strong>{{ p.name }}</strong></td>
+                    <td>{{ p.category.name if p.category else '—' }}</td>
+                    <td>R$ {{ "%.2f"|format(p.price) }}</td>
+                    <td>
+                        <span class="{% if p.stock == 0 %}text-danger{% elif p.is_low_stock %}text-warning{% else %}text-success{% endif %}">
+                            {{ p.stock }}
+                        </span>
+                    </td>
+                    <td>
+                        {% if p.is_featured %}<span class="chip chip-gold">Destaque</span>{% endif %}
+                        {% if p.is_bestseller %}<span class="chip chip-green">Top</span>{% endif %}
+                    </td>
+                    <td>
+                        <span class="{% if p.is_active %}text-success{% else %}text-muted{% endif %}">
+                            {{ 'Ativo' if p.is_active else 'Inativo' }}
+                        </span>
+                    </td>
+                    <td class="actions-cell">
+                        <a href="{{ url_for('shop.product_detail', product_id=p.id) }}" class="btn btn-sm btn-outline" target="_blank" title="Ver na loja"><i class="fas fa-eye"></i></a>
+                        <a href="{{ url_for('admin.product_edit', product_id=p.id) }}" class="btn btn-sm btn-outline" title="Editar"><i class="fas fa-edit"></i></a>
+                        <form action="{{ url_for('admin.product_delete', product_id=p.id) }}" method="post" style="display:inline" onsubmit="return confirm('Desativar produto?')">
+                            <button class="btn btn-sm btn-danger" title="Desativar"><i class="fas fa-ban"></i></button>
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

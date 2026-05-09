@@ -1,0 +1,237 @@
+{% extends 'base.html' %}
+{% block title %}Catálogo de Perfumes | LuxScent{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div class="container">
+        <h1>Catálogo de Perfumes</h1>
+        <p>{{ products|length }} fragrância(s) encontrada(s)</p>
+    </div>
+</div>
+
+<section class="catalog-section">
+    <div class="container">
+        <div class="catalog-layout">
+
+            <!-- Sidebar Filtros -->
+            <aside class="filters-sidebar">
+                <div class="filter-header">
+                    <h3><i class="fas fa-sliders-h"></i> Filtros</h3>
+                    <a href="{{ url_for('shop.catalog') }}" class="clear-filters">Limpar</a>
+                </div>
+
+                <form method="get" action="{{ url_for('shop.catalog') }}" id="filterForm">
+                    <input type="hidden" name="q" value="{{ query }}">
+
+                    <div class="filter-group">
+                        <h4>Categoria</h4>
+                        {% for cat in categories %}
+                        <label class="filter-check">
+                            <input type="radio" name="categoria" value="{{ cat.slug }}"
+                                   {% if selected_cat == cat.slug %}checked{% endif %}
+                                   onchange="this.form.submit()">
+                            <span>{{ cat.name }}</span>
+                        </label>
+                        {% endfor %}
+                        <label class="filter-check">
+                            <input type="radio" name="categoria" value=""
+                                   {% if not selected_cat %}checked{% endif %}
+                                   onchange="this.form.submit()">
+                            <span>Todos</span>
+                        </label>
+                    </div>
+
+                    <div class="filter-group">
+                        <h4>Gênero</h4>
+                        {% for g in ['Masculino', 'Feminino', 'Unissex'] %}
+                        <label class="filter-check">
+                            <input type="radio" name="genero" value="{{ g }}"
+                                   {% if selected_gender == g %}checked{% endif %}
+                                   onchange="this.form.submit()">
+                            <span>{{ g }}</span>
+                        </label>
+                        {% endfor %}
+                        <label class="filter-check">
+                            <input type="radio" name="genero" value=""
+                                   {% if not selected_gender %}checked{% endif %}
+                                   onchange="this.form.submit()">
+                            <span>Todos</span>
+                        </label>
+                    </div>
+
+                    <div class="filter-group">
+                        <h4>Ordenar por</h4>
+                        <select name="ordenar" onchange="this.form.submit()" class="filter-select">
+                            <option value="nome" {% if selected_sort == 'nome' %}selected{% endif %}>Nome A-Z</option>
+                            <option value="preco_asc" {% if selected_sort == 'preco_asc' %}selected{% endif %}>Menor Preço</option>
+                            <option value="preco_desc" {% if selected_sort == 'preco_desc' %}selected{% endif %}>Maior Preço</option>
+                            <option value="novos" {% if selected_sort == 'novos' %}selected{% endif %}>Mais Novos</option>
+                        </select>
+                    </div>
+                </form>
+            </aside>
+
+            <!-- Products Area -->
+            <div class="catalog-main">
+                <!-- Search bar -->
+                <div class="catalog-toolbar">
+                    <div class="search-bar-catalog">
+                        <i class="fas fa-search"></i>
+                        <input type="text" id="catalogSearch" placeholder="Buscar em tempo real..."
+                               value="{{ query }}" autocomplete="off">
+                        <button id="clearSearch" class="clear-search" {% if not query %}style="display:none"{% endif %}>✕</button>
+                    </div>
+                    <span class="results-count" id="resultsCount">{{ products|length }} produto(s)</span>
+                </div>
+
+                <!-- Tag chips filtros ativos -->
+                {% if selected_cat or selected_gender or query %}
+                <div class="active-filters">
+                    {% if query %}<span class="filter-chip">🔍 "{{ query }}" <a href="{{ url_for('shop.catalog', categoria=selected_cat, genero=selected_gender) }}">✕</a></span>{% endif %}
+                    {% if selected_cat %}<span class="filter-chip">📁 {{ selected_cat }} <a href="{{ url_for('shop.catalog', genero=selected_gender, q=query) }}">✕</a></span>{% endif %}
+                    {% if selected_gender %}<span class="filter-chip">👤 {{ selected_gender }} <a href="{{ url_for('shop.catalog', categoria=selected_cat, q=query) }}">✕</a></span>{% endif %}
+                </div>
+                {% endif %}
+
+                <!-- Products Grid -->
+                <div class="products-grid" id="productsGrid">
+                    {% for product in products %}
+                    <div class="product-card">
+                        <div class="product-img-wrap">
+                            <a href="{{ url_for('shop.product_detail', product_id=product.id) }}">
+                                <div class="product-img-placeholder" style="background: var(--grad-{{ loop.index % 4 + 1 }})">
+                                    <i class="fas fa-spray-can"></i>
+                                    <span>{{ product.name[:2].upper() }}</span>
+                                </div>
+                            </a>
+                            {% if product.discount_percent > 0 %}
+                            <div class="badge badge-sale">-{{ product.discount_percent }}%</div>
+                            {% endif %}
+                            {% if product.is_low_stock %}
+                            <div class="scarcity-tag"><i class="fas fa-fire"></i> {{ product.stock }} restantes</div>
+                            {% endif %}
+                            <div class="product-overlay">
+                                <a href="{{ url_for('shop.product_detail', product_id=product.id) }}" class="overlay-btn">Ver Detalhes</a>
+                            </div>
+                        </div>
+                        <div class="product-info">
+                            <div class="product-cat">{{ product.category.name if product.category else '—' }}</div>
+                            <h3 class="product-name">
+                                <a href="{{ url_for('shop.product_detail', product_id=product.id) }}">{{ product.name }}</a>
+                            </h3>
+                            <div class="product-meta">
+                                <span class="product-ml">{{ product.ml }}ml</span>
+                                <span class="product-gender">{{ product.gender }}</span>
+                            </div>
+                            <div class="product-price-row">
+                                <div class="price-group">
+                                    {% if product.original_price and product.original_price > product.price %}
+                                    <span class="price-old">R$ {{ "%.2f"|format(product.original_price) }}</span>
+                                    {% endif %}
+                                    <span class="price-current">R$ {{ "%.2f"|format(product.price) }}</span>
+                                </div>
+                                <form action="{{ url_for('shop.add_to_cart', product_id=product.id) }}" method="post" class="ajax-cart-form">
+                                    <input type="hidden" name="quantity" value="1">
+                                    <button type="submit" class="btn-cart"><i class="fas fa-shopping-bag"></i></button>
+                                </form>
+                            </div>
+                            <a href="{{ url_for('shop.product_detail', product_id=product.id) }}" class="btn btn-gold btn-full mt-8">
+                                Comprar Agora
+                            </a>
+                        </div>
+                    </div>
+                    {% else %}
+                    <div class="empty-state" id="emptyState">
+                        <i class="fas fa-search"></i>
+                        <h3>Nenhum produto encontrado</h3>
+                        <p>Tente outros filtros ou termos de busca.</p>
+                        <a href="{{ url_for('shop.catalog') }}" class="btn btn-gold">Ver Todos</a>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Busca em tempo real via AJAX
+let searchTimeout;
+const searchInput = document.getElementById('catalogSearch');
+const productsGrid = document.getElementById('productsGrid');
+const resultsCount = document.getElementById('resultsCount');
+const clearBtn = document.getElementById('clearSearch');
+
+if (searchInput) {
+    searchInput.addEventListener('input', function() {
+        clearTimeout(searchTimeout);
+        clearBtn.style.display = this.value ? 'block' : 'none';
+        searchTimeout = setTimeout(() => {
+            const q = this.value.trim();
+            const cat = new URLSearchParams(window.location.search).get('categoria') || '';
+            const gender = new URLSearchParams(window.location.search).get('genero') || '';
+            fetchProducts(q, cat, gender);
+        }, 300);
+    });
+}
+
+if (clearBtn) {
+    clearBtn.addEventListener('click', () => {
+        searchInput.value = '';
+        clearBtn.style.display = 'none';
+        fetchProducts('', '', '');
+    });
+}
+
+function fetchProducts(q, cat, gender) {
+    const url = `/api/produtos?q=${encodeURIComponent(q)}&categoria=${cat}&genero=${gender}`;
+    fetch(url)
+        .then(r => r.json())
+        .then(products => {
+            resultsCount.textContent = products.length + ' produto(s)';
+            if (products.length === 0) {
+                productsGrid.innerHTML = `<div class="empty-state"><i class="fas fa-search"></i><h3>Nenhum produto encontrado</h3><p>Tente outros termos.</p></div>`;
+                return;
+            }
+            productsGrid.innerHTML = products.map((p, i) => `
+                <div class="product-card">
+                    <div class="product-img-wrap">
+                        <a href="/produto/${p.id}">
+                            <div class="product-img-placeholder" style="background: var(--grad-${(i%4)+1})">
+                                <i class="fas fa-spray-can"></i>
+                                <span>${p.name.substring(0,2).toUpperCase()}</span>
+                            </div>
+                        </a>
+                        ${p.discount_percent > 0 ? `<div class="badge badge-sale">-${p.discount_percent}%</div>` : ''}
+                        ${p.is_low_stock ? `<div class="scarcity-tag"><i class="fas fa-fire"></i> ${p.stock} restantes</div>` : ''}
+                        <div class="product-overlay"><a href="/produto/${p.id}" class="overlay-btn">Ver Detalhes</a></div>
+                    </div>
+                    <div class="product-info">
+                        <div class="product-cat">${p.category}</div>
+                        <h3 class="product-name"><a href="/produto/${p.id}">${p.name}</a></h3>
+                        <div class="product-meta">
+                            <span class="product-ml">${p.ml}ml</span>
+                            <span class="product-gender">${p.gender}</span>
+                        </div>
+                        <div class="product-price-row">
+                            <div class="price-group">
+                                ${p.original_price > p.price ? `<span class="price-old">R$ ${p.original_price.toFixed(2).replace('.',',')}</span>` : ''}
+                                <span class="price-current">R$ ${p.price.toFixed(2).replace('.',',')}</span>
+                            </div>
+                            <form action="/carrinho/adicionar/${p.id}" method="post" class="ajax-cart-form">
+                                <input type="hidden" name="quantity" value="1">
+                                <button type="submit" class="btn-cart"><i class="fas fa-shopping-bag"></i></button>
+                            </form>
+                        </div>
+                        <a href="/produto/${p.id}" class="btn btn-gold btn-full mt-8">Comprar Agora</a>
+                    </div>
+                </div>
+            `).join('');
+            // Rebind cart forms
+            initAjaxForms();
+        });
+}
+</script>
+{% endblock %}

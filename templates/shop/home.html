@@ -1,0 +1,280 @@
+{% extends 'base.html' %}
+
+{% block title %}LuxScent — Perfumes de Luxo | Entrega Rápida{% endblock %}
+
+{% block content %}
+
+<!-- ══ HERO ════════════════════════════════════════════════════════════════ -->
+<section class="hero">
+    <div class="hero-bg"></div>
+    <div class="container hero-content">
+        <div class="hero-badge">✦ Coleção Exclusiva 2024</div>
+        <h1 class="hero-title">
+            Desperte<br>
+            <em>Sua Essência</em>
+        </h1>
+        <p class="hero-sub">Fragrâncias que marcam presença. Qualidade premium ao alcance de todos.</p>
+        <div class="hero-cta">
+            <a href="{{ url_for('shop.catalog') }}" class="btn btn-gold btn-lg">
+                <i class="fas fa-gem"></i> Ver Coleção
+            </a>
+            <a href="{{ url_for('shop.catalog') }}?categoria=importado" class="btn btn-outline btn-lg">
+                Importados
+            </a>
+        </div>
+        <div class="hero-stats">
+            <div class="stat"><strong>500+</strong><span>Clientes</span></div>
+            <div class="stat"><strong>98%</strong><span>Satisfação</span></div>
+            <div class="stat"><strong>50+</strong><span>Fragrâncias</span></div>
+        </div>
+    </div>
+    <div class="hero-scroll">
+        <span>Rolar</span>
+        <i class="fas fa-chevron-down"></i>
+    </div>
+</section>
+
+<!-- ══ PROMO BANNER ════════════════════════════════════════════════════════ -->
+<section class="promo-banner">
+    <div class="container">
+        <div class="promo-grid">
+            <div class="promo-card promo-fire">
+                <div class="promo-icon">🔥</div>
+                <div>
+                    <strong>2 por R$299</strong>
+                    <span>Leve 2 perfumes selecionados</span>
+                </div>
+            </div>
+            <div class="promo-card promo-truck">
+                <div class="promo-icon">🚚</div>
+                <div>
+                    <strong>Frete Grátis</strong>
+                    <span>Nas compras acima de R$200</span>
+                </div>
+            </div>
+            <div class="promo-card promo-pix">
+                <div class="promo-icon">💰</div>
+                <div>
+                    <strong>10% no Pix</strong>
+                    <span>Desconto pagando via Pix</span>
+                </div>
+            </div>
+            <div class="promo-card promo-timer">
+                <div class="promo-icon">⏰</div>
+                <div>
+                    <strong>Oferta acaba em: <span id="countdown">--:--:--</span></strong>
+                    <span>Corra! Estoque limitado</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ══ FEATURED ════════════════════════════════════════════════════════════ -->
+<section class="section">
+    <div class="container">
+        <div class="section-header">
+            <span class="section-tag">Nossa Coleção</span>
+            <h2 class="section-title">Perfumes em Destaque</h2>
+            <p>Selecionados com cuidado para os mais exigentes</p>
+        </div>
+
+        <div class="products-grid">
+            {% for product in featured %}
+            <div class="product-card" data-aos="fade-up">
+                <div class="product-img-wrap">
+                    <a href="{{ url_for('shop.product_detail', product_id=product.id) }}">
+                        <div class="product-img-placeholder" style="background: var(--grad-{{ loop.index % 4 + 1 }})">
+                            <i class="fas fa-spray-can"></i>
+                            <span>{{ product.name[:2].upper() }}</span>
+                        </div>
+                    </a>
+                    {% if product.discount_percent > 0 %}
+                    <div class="badge badge-sale">-{{ product.discount_percent }}%</div>
+                    {% endif %}
+                    {% if product.is_bestseller %}
+                    <div class="badge badge-top">⭐ Top</div>
+                    {% endif %}
+                    {% if product.is_low_stock %}
+                    <div class="scarcity-tag"><i class="fas fa-fire"></i> Restam {{ product.stock }} unid.</div>
+                    {% endif %}
+                    <div class="product-overlay">
+                        <a href="{{ url_for('shop.product_detail', product_id=product.id) }}" class="overlay-btn">
+                            Ver Detalhes
+                        </a>
+                    </div>
+                </div>
+                <div class="product-info">
+                    <div class="product-cat">{{ product.category.name if product.category else '' }}</div>
+                    <h3 class="product-name">
+                        <a href="{{ url_for('shop.product_detail', product_id=product.id) }}">{{ product.name }}</a>
+                    </h3>
+                    <div class="product-meta">
+                        <span class="product-ml">{{ product.ml }}ml</span>
+                        <span class="product-gender">{{ product.gender }}</span>
+                        {% if product.avg_rating > 0 %}
+                        <span class="product-rating">
+                            <i class="fas fa-star"></i> {{ product.avg_rating }}
+                        </span>
+                        {% endif %}
+                    </div>
+                    <div class="product-price-row">
+                        <div class="price-group">
+                            {% if product.original_price and product.original_price > product.price %}
+                            <span class="price-old">R$ {{ "%.2f"|format(product.original_price) }}</span>
+                            {% endif %}
+                            <span class="price-current">R$ {{ "%.2f"|format(product.price) }}</span>
+                        </div>
+                        <form action="{{ url_for('shop.add_to_cart', product_id=product.id) }}" method="post" class="ajax-cart-form">
+                            <input type="hidden" name="quantity" value="1">
+                            <button type="submit" class="btn-cart" title="Adicionar ao carrinho">
+                                <i class="fas fa-shopping-bag"></i>
+                            </button>
+                        </form>
+                    </div>
+                    <a href="{{ url_for('shop.product_detail', product_id=product.id) }}" class="btn btn-gold btn-full mt-8">
+                        Comprar Agora
+                    </a>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <div class="section-cta">
+            <a href="{{ url_for('shop.catalog') }}" class="btn btn-outline btn-lg">
+                Ver Todos os Perfumes <i class="fas fa-arrow-right"></i>
+            </a>
+        </div>
+    </div>
+</section>
+
+<!-- ══ CATEGORIAS ══════════════════════════════════════════════════════════ -->
+<section class="section section-dark">
+    <div class="container">
+        <div class="section-header">
+            <span class="section-tag">Explore</span>
+            <h2 class="section-title">Por Família Olfativa</h2>
+        </div>
+        <div class="categories-grid">
+            {% set cat_icons = {'Amadeirado': 'fa-tree', 'Floral': 'fa-flower', 'Cítrico': 'fa-lemon', 'Oriental': 'fa-moon', 'Doce': 'fa-candy-cane', 'Importado': 'fa-plane'} %}
+            {% set cat_emojis = {'Amadeirado': '🌳', 'Floral': '🌸', 'Cítrico': '🍋', 'Oriental': '🌙', 'Doce': '🍯', 'Importado': '✈️'} %}
+            {% for cat in categories %}
+            <a href="{{ url_for('shop.catalog') }}?categoria={{ cat.slug }}" class="cat-card">
+                <div class="cat-emoji">{{ cat_emojis.get(cat.name, '🌟') }}</div>
+                <span class="cat-name">{{ cat.name }}</span>
+            </a>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+<!-- ══ BESTSELLERS ═════════════════════════════════════════════════════════ -->
+{% if bestsellers %}
+<section class="section">
+    <div class="container">
+        <div class="section-header">
+            <span class="section-tag">🏆 Mais Vendidos</span>
+            <h2 class="section-title">Os Favoritos dos Clientes</h2>
+        </div>
+        <div class="bestsellers-grid">
+            {% for product in bestsellers %}
+            <div class="bestseller-card">
+                <div class="bs-rank">#{{ loop.index }}</div>
+                <div class="bs-img product-img-placeholder" style="background: var(--grad-{{ loop.index % 4 + 1 }})">
+                    <i class="fas fa-spray-can"></i>
+                    <span>{{ product.name[:2].upper() }}</span>
+                </div>
+                <div class="bs-info">
+                    <div class="bs-cat">{{ product.category.name if product.category else '' }}</div>
+                    <h3><a href="{{ url_for('shop.product_detail', product_id=product.id) }}">{{ product.name }}</a></h3>
+                    <div class="bs-rating">
+                        {% for i in range(5) %}
+                        <i class="fas fa-star {% if i < product.avg_rating|int %}text-gold{% else %}text-dim{% endif %}"></i>
+                        {% endfor %}
+                        <span>({{ product.review_count }})</span>
+                    </div>
+                    <div class="bs-price">R$ {{ "%.2f"|format(product.price) }}</div>
+                    <a href="{{ url_for('shop.product_detail', product_id=product.id) }}" class="btn btn-gold">
+                        Comprar
+                    </a>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endif %}
+
+<!-- ══ SOCIAL PROOF ════════════════════════════════════════════════════════ -->
+<section class="section section-dark">
+    <div class="container">
+        <div class="section-header">
+            <span class="section-tag">Depoimentos</span>
+            <h2 class="section-title">O que Nossos Clientes Dizem</h2>
+        </div>
+        <div class="testimonials-grid">
+            <div class="testimonial">
+                <div class="t-stars">★★★★★</div>
+                <p>"Perfume incrível! Dura o dia inteiro e recebo elogios em todo lugar. Super recomendo a LuxScent!"</p>
+                <div class="t-author">
+                    <div class="t-avatar">MS</div>
+                    <div><strong>Maria Silva</strong><span>Fortaleza, CE</span></div>
+                </div>
+            </div>
+            <div class="testimonial">
+                <div class="t-stars">★★★★★</div>
+                <p>"Qualidade surpreendente pelo preço. Comprei o Black Oud e já estou no segundo frasco. Melhor loja!"</p>
+                <div class="t-author">
+                    <div class="t-avatar">JP</div>
+                    <div><strong>João Pedro</strong><span>São Paulo, SP</span></div>
+                </div>
+            </div>
+            <div class="testimonial">
+                <div class="t-stars">★★★★★</div>
+                <p>"Entrega rápida e produto chegou perfeito. O Sheikh Al Arab é simplesmente divino. Voltarei com certeza!"</p>
+                <div class="t-author">
+                    <div class="t-avatar">AC</div>
+                    <div><strong>Ana Costa</strong><span>Recife, PE</span></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ══ CTA FINAL ═══════════════════════════════════════════════════════════ -->
+<section class="cta-section">
+    <div class="cta-bg"></div>
+    <div class="container cta-content">
+        <h2>Pronto para sua Nova Fragrância?</h2>
+        <p>Mais de 500 clientes satisfeitos. Garanta o seu agora!</p>
+        <a href="{{ url_for('shop.catalog') }}" class="btn btn-gold btn-xl">
+            <i class="fas fa-gem"></i> Ver Toda a Coleção
+        </a>
+    </div>
+</section>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Contador regressivo (resetar a cada hora)
+function startCountdown() {
+    const now = new Date();
+    const end = new Date(now);
+    end.setHours(now.getHours() + 1, 0, 0, 0);
+
+    function update() {
+        const diff = end - new Date();
+        if (diff <= 0) { startCountdown(); return; }
+        const h = Math.floor(diff / 3600000);
+        const m = Math.floor((diff % 3600000) / 60000);
+        const s = Math.floor((diff % 60000) / 1000);
+        const el = document.getElementById('countdown');
+        if (el) el.textContent = `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+    }
+    update();
+    setInterval(update, 1000);
+}
+startCountdown();
+</script>
+{% endblock %}

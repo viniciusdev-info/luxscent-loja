@@ -1,0 +1,275 @@
+{% extends 'base.html' %}
+{% block title %}{{ product.name }} | LuxScent{% endblock %}
+{% block meta_description %}{{ product.description[:150] if product.description else product.name }} — Compre na LuxScent!{% endblock %}
+
+{% block content %}
+<section class="product-detail-section">
+    <div class="container">
+        <div class="breadcrumb">
+            <a href="{{ url_for('shop.home') }}">Início</a> /
+            <a href="{{ url_for('shop.catalog') }}">Catálogo</a> /
+            {% if product.category %}<a href="{{ url_for('shop.catalog', categoria=product.category.slug) }}">{{ product.category.name }}</a> / {% endif %}
+            <span>{{ product.name }}</span>
+        </div>
+
+        <div class="product-detail-grid">
+            <!-- Imagem -->
+            <div class="product-gallery">
+                <div class="main-img product-img-placeholder product-img-lg"
+                     style="background: var(--grad-1)">
+                    <i class="fas fa-spray-can"></i>
+                    <span>{{ product.name[:3].upper() }}</span>
+                </div>
+                <div class="img-thumbs">
+                    <div class="thumb product-img-placeholder" style="background: var(--grad-2)">
+                        <i class="fas fa-spray-can"></i></div>
+                    <div class="thumb product-img-placeholder" style="background: var(--grad-3)">
+                        <i class="fas fa-spray-can"></i></div>
+                    <div class="thumb product-img-placeholder" style="background: var(--grad-4)">
+                        <i class="fas fa-spray-can"></i></div>
+                </div>
+            </div>
+
+            <!-- Info -->
+            <div class="product-detail-info">
+                {% if product.category %}
+                <div class="product-cat">{{ product.category.name }}</div>
+                {% endif %}
+
+                <h1 class="product-detail-name">{{ product.name }}</h1>
+
+                <!-- Rating -->
+                <div class="detail-rating">
+                    {% for i in range(5) %}
+                    <i class="fas fa-star {% if i < product.avg_rating|int %}text-gold{% else %}text-dim{% endif %}"></i>
+                    {% endfor %}
+                    <span>{{ product.avg_rating }} ({{ product.review_count }} avaliações)</span>
+                </div>
+
+                <!-- Preço -->
+                <div class="detail-price-box">
+                    {% if product.original_price and product.original_price > product.price %}
+                    <div class="detail-price-old">De R$ {{ "%.2f"|format(product.original_price) }}</div>
+                    <div class="detail-price-badge">Você economiza {{ product.discount_percent }}%</div>
+                    {% endif %}
+                    <div class="detail-price">R$ {{ "%.2f"|format(product.price) }}</div>
+                    <div class="detail-price-pix">💰 R$ {{ "%.2f"|format(product.price * 0.9) }} no Pix (10% OFF)</div>
+                </div>
+
+                <!-- Info rápida -->
+                <div class="detail-specs">
+                    <div class="spec-item"><i class="fas fa-flask"></i> <strong>Volume:</strong> {{ product.ml }}ml</div>
+                    <div class="spec-item"><i class="fas fa-venus-mars"></i> <strong>Gênero:</strong> {{ product.gender }}</div>
+                    <div class="spec-item">
+                        <i class="fas fa-boxes"></i>
+                        <strong>Estoque:</strong>
+                        {% if product.is_low_stock %}
+                        <span class="text-danger">⚠️ Apenas {{ product.stock }} unidade(s)!</span>
+                        {% else %}
+                        <span class="text-success">✅ Disponível</span>
+                        {% endif %}
+                    </div>
+                </div>
+
+                {% if product.is_low_stock %}
+                <div class="scarcity-alert">
+                    <i class="fas fa-fire"></i>
+                    <strong>Atenção!</strong> Restam apenas <strong>{{ product.stock }}</strong> unidades. Garanta o seu agora!
+                </div>
+                {% endif %}
+
+                <!-- Form adicionar ao carrinho -->
+                <form action="{{ url_for('shop.add_to_cart', product_id=product.id) }}" method="post" class="add-cart-form">
+                    <div class="qty-row">
+                        <div class="qty-control">
+                            <button type="button" class="qty-btn" id="qtyMinus">−</button>
+                            <input type="number" name="quantity" id="qtyInput" value="1" min="1" max="{{ product.stock }}" class="qty-input">
+                            <button type="button" class="qty-btn" id="qtyPlus">+</button>
+                        </div>
+                        <button type="submit" class="btn btn-gold btn-lg flex-1">
+                            <i class="fas fa-shopping-bag"></i> Adicionar ao Carrinho
+                        </button>
+                    </div>
+                    <a href="{{ url_for('shop.checkout') }}" class="btn btn-outline btn-full mt-8"
+                       onclick="this.form.submit(); return true;">
+                        <i class="fas fa-bolt"></i> Comprar Agora
+                    </a>
+                </form>
+
+                <!-- Notas Olfativas -->
+                {% if product.top_notes or product.heart_notes or product.base_notes %}
+                <div class="olfactive-notes">
+                    <h3>Pirâmide Olfativa</h3>
+                    <div class="notes-pyramid">
+                        {% if product.top_notes %}
+                        <div class="note-tier">
+                            <div class="note-label">🌬️ Saída</div>
+                            <div class="note-value">{{ product.top_notes }}</div>
+                        </div>
+                        {% endif %}
+                        {% if product.heart_notes %}
+                        <div class="note-tier">
+                            <div class="note-label">💐 Coração</div>
+                            <div class="note-value">{{ product.heart_notes }}</div>
+                        </div>
+                        {% endif %}
+                        {% if product.base_notes %}
+                        <div class="note-tier">
+                            <div class="note-label">🌳 Fundo</div>
+                            <div class="note-value">{{ product.base_notes }}</div>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endif %}
+
+                <!-- Garantias -->
+                <div class="detail-guarantees">
+                    <div class="guarantee"><i class="fab fa-whatsapp"></i> Pedido pelo WhatsApp</div>
+                    <div class="guarantee"><i class="fas fa-shield-alt"></i> Produto 100% original</div>
+                    <div class="guarantee"><i class="fas fa-undo"></i> Troca garantida</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Descrição + Avaliações -->
+        <div class="product-tabs">
+            <div class="tabs-nav">
+                <button class="tab-btn active" data-tab="desc">Descrição</button>
+                <button class="tab-btn" data-tab="reviews">Avaliações ({{ product.review_count }})</button>
+            </div>
+
+            <div class="tab-content active" id="tab-desc">
+                <div class="product-description">
+                    <p>{{ product.description }}</p>
+                </div>
+            </div>
+
+            <div class="tab-content" id="tab-reviews">
+                <!-- Reviews existentes -->
+                <div class="reviews-list">
+                    {% for review in reviews %}
+                    <div class="review-card">
+                        <div class="review-header">
+                            <div class="reviewer-avatar">{{ review.reviewer_name[:2].upper() }}</div>
+                            <div>
+                                <strong>{{ review.reviewer_name }}</strong>
+                                <div class="review-stars">
+                                    {% for i in range(5) %}
+                                    <i class="fas fa-star {% if i < review.rating %}text-gold{% else %}text-dim{% endif %}"></i>
+                                    {% endfor %}
+                                </div>
+                                <span class="review-date">{{ review.created_at.strftime('%d/%m/%Y') }}</span>
+                            </div>
+                        </div>
+                        <p>{{ review.comment }}</p>
+                    </div>
+                    {% else %}
+                    <p class="no-reviews">Seja o primeiro a avaliar este produto!</p>
+                    {% endfor %}
+                </div>
+
+                <!-- Formulário de review -->
+                <div class="review-form-wrap">
+                    <h3>Deixe sua Avaliação</h3>
+                    <form method="post" action="{{ url_for('shop.add_review', product_id=product.id) }}" class="review-form">
+                        <div class="star-picker" id="starPicker">
+                            {% for i in range(1, 6) %}
+                            <button type="button" class="star-pick" data-val="{{ i }}">★</button>
+                            {% endfor %}
+                            <input type="hidden" name="rating" id="ratingInput" value="5">
+                        </div>
+                        <input type="text" name="name" placeholder="Seu nome *" required class="form-input">
+                        <textarea name="comment" placeholder="Sua opinião *" required class="form-input" rows="3"></textarea>
+                        <button type="submit" class="btn btn-gold">Enviar Avaliação</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Produtos relacionados -->
+        {% if related %}
+        <div class="related-section">
+            <h2>Você também pode gostar</h2>
+            <div class="products-grid">
+                {% for p in related %}
+                <div class="product-card">
+                    <div class="product-img-wrap">
+                        <a href="{{ url_for('shop.product_detail', product_id=p.id) }}">
+                            <div class="product-img-placeholder" style="background: var(--grad-{{ loop.index % 4 + 1 }})">
+                                <i class="fas fa-spray-can"></i><span>{{ p.name[:2].upper() }}</span>
+                            </div>
+                        </a>
+                        <div class="product-overlay">
+                            <a href="{{ url_for('shop.product_detail', product_id=p.id) }}" class="overlay-btn">Ver Detalhes</a>
+                        </div>
+                    </div>
+                    <div class="product-info">
+                        <h3 class="product-name"><a href="{{ url_for('shop.product_detail', product_id=p.id) }}">{{ p.name }}</a></h3>
+                        <div class="product-price-row">
+                            <span class="price-current">R$ {{ "%.2f"|format(p.price) }}</span>
+                            <a href="{{ url_for('shop.product_detail', product_id=p.id) }}" class="btn btn-gold btn-sm">Ver</a>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</section>
+
+<!-- Botão fixo mobile -->
+<div class="sticky-buy">
+    <div class="sticky-price">R$ {{ "%.2f"|format(product.price) }}</div>
+    <form action="{{ url_for('shop.add_to_cart', product_id=product.id) }}" method="post" class="ajax-cart-form">
+        <input type="hidden" name="quantity" value="1">
+        <button type="submit" class="btn btn-gold btn-lg">
+            <i class="fas fa-shopping-bag"></i> Adicionar ao Carrinho
+        </button>
+    </form>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Tabs
+document.querySelectorAll('.tab-btn').forEach(btn => {
+    btn.addEventListener('click', function() {
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+        this.classList.add('active');
+        document.getElementById('tab-' + this.dataset.tab).classList.add('active');
+    });
+});
+
+// Qty control
+const qtyInput = document.getElementById('qtyInput');
+document.getElementById('qtyMinus')?.addEventListener('click', () => {
+    if (qtyInput.value > 1) qtyInput.value--;
+});
+document.getElementById('qtyPlus')?.addEventListener('click', () => {
+    if (parseInt(qtyInput.value) < parseInt(qtyInput.max)) qtyInput.value++;
+});
+
+// Star picker
+const stars = document.querySelectorAll('.star-pick');
+const ratingInput = document.getElementById('ratingInput');
+stars.forEach(s => {
+    s.addEventListener('click', function() {
+        const val = parseInt(this.dataset.val);
+        ratingInput.value = val;
+        stars.forEach((st, i) => st.classList.toggle('active', i < val));
+    });
+    s.addEventListener('mouseenter', function() {
+        const val = parseInt(this.dataset.val);
+        stars.forEach((st, i) => st.classList.toggle('hover', i < val));
+    });
+});
+document.getElementById('starPicker')?.addEventListener('mouseleave', () => {
+    stars.forEach(st => st.classList.remove('hover'));
+});
+// Init stars
+stars.forEach((s, i) => i < 5 && s.classList.add('active'));
+</script>
+{% endblock %}
