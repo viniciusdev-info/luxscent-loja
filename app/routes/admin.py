@@ -20,6 +20,13 @@ def admin_required(f):
     return decorated
 
 
+def safe_float(value, default=0.0):
+    s = str(value).strip().lower()
+    if s in ('nan', 'inf', '-inf', '+inf'):
+        return default
+    return float(value)
+
+
 def allowed_file(filename):
     return '.' in filename and \
         filename.rsplit('.', 1)[1].lower() in current_app.config['ALLOWED_EXTENSIONS']
@@ -84,8 +91,8 @@ def product_new():
     if request.method == 'POST':
         name = request.form.get('name', '').strip()
         description = request.form.get('description', '').strip()
-        price = float(request.form.get('price', 0))
-        original_price = float(request.form.get('original_price', 0))
+        price = safe_float(request.form.get('price', 0))
+        original_price = safe_float(request.form.get('original_price', 0))
         stock = int(request.form.get('stock', 0))
         ml = int(request.form.get('ml', 100))
         gender = request.form.get('gender', 'Unissex')
@@ -125,8 +132,8 @@ def product_edit(product_id):
     if request.method == 'POST':
         product.name = request.form.get('name', '').strip()
         product.description = request.form.get('description', '').strip()
-        product.price = float(request.form.get('price', 0))
-        product.original_price = float(request.form.get('original_price', 0))
+        product.price = safe_float(request.form.get('price', 0))
+        product.original_price = safe_float(request.form.get('original_price', 0))
         product.stock = int(request.form.get('stock', 0))
         product.ml = int(request.form.get('ml', 100))
         product.gender = request.form.get('gender', 'Unissex')
