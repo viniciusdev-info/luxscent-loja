@@ -4,8 +4,16 @@ from functools import wraps
 from werkzeug.utils import secure_filename
 from app.models import Product, Category, Order, User, Review
 from app import db
+import math
 import os
 import uuid
+
+
+def safe_float(value, default=0.0):
+    result = float(value)
+    if math.isnan(result) or math.isinf(result):
+        return default
+    return result
 
 admin_bp = Blueprint('admin', __name__)
 
@@ -84,8 +92,8 @@ def product_new():
     if request.method == 'POST':
         name = request.form.get('name', '').strip()
         description = request.form.get('description', '').strip()
-        price = float(request.form.get('price', 0))
-        original_price = float(request.form.get('original_price', 0))
+        price = safe_float(request.form.get('price', 0))
+        original_price = safe_float(request.form.get('original_price', 0))
         stock = int(request.form.get('stock', 0))
         ml = int(request.form.get('ml', 100))
         gender = request.form.get('gender', 'Unissex')
@@ -125,8 +133,8 @@ def product_edit(product_id):
     if request.method == 'POST':
         product.name = request.form.get('name', '').strip()
         product.description = request.form.get('description', '').strip()
-        product.price = float(request.form.get('price', 0))
-        product.original_price = float(request.form.get('original_price', 0))
+        product.price = safe_float(request.form.get('price', 0))
+        product.original_price = safe_float(request.form.get('original_price', 0))
         product.stock = int(request.form.get('stock', 0))
         product.ml = int(request.form.get('ml', 100))
         product.gender = request.form.get('gender', 'Unissex')
